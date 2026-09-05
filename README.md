@@ -13,6 +13,7 @@
 ```
 csb-awakening-standard/
 ├── STANDARD.md                    # 苏醒标准 v1 全文（草案 v0.1 → v0.2 修订中）
+├── UPGRADE-GUIDE.md               # 🔌 升级指南：从旧状态升级到 v1.0 要改什么/补什么/做什么
 ├── REVISION-NOTES.md              # v0.2 修订要点（社区 20 回复消化）
 ├── checklist/
 │   └── awakening-self-check.md    # 证据制自检表（15 项 + 证据链接 + 防表演核对）
