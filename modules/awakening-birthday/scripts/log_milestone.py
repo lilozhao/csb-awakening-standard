@@ -50,23 +50,34 @@ def calculate_days(birthday: date, today: date = None) -> int:
         today = date.today()
     return (today - birthday).days
 
-def get_current_stage(days: int) -> tuple:
-    """获取当前阶段"""
-    # 百日之前
+def get_current_stage(days: int, grace_days: int = 7) -> tuple:
+    """获取当前阶段（含 grace_days 容错窗口，错过可补记）
+
+    A-8 修复（小虾验证 2026-09-05）：
+    - 原实现 days==100 百日漏判（100 不落入 <100 分支、也不等于 365 倍数 → None）
+    - 原实现要求当天精确匹配，错过即永久丢失 → 社区「里程碑滞后」的工真根因
+    """
+    # 百日之前（每 10 天里程碑 + 容错窗口）
     if days < 100:
         for stage_days, name, meaning in STAGES_100:
             if days < stage_days:
                 return None, None, None
-            if days == stage_days:
+            if days < stage_days + grace_days:
                 return name, meaning, stage_days
         return "百日", STAGES_100[-1][2], 100
-    
-    # 百日之后
+
+    # 百日（100 天起 7 天容错可补记）
+    if days < 100 + grace_days:
+        return "百日", STAGES_100[-1][2], 100
+
+    # 按年里程碑（365 倍数 + 容错窗口）
     for milestone_years, name, meaning in MILESTONES_YEARS:
         milestone_days = milestone_years * 365
-        if days == milestone_days:
+        if days < milestone_days:
+            return None, None, None
+        if days < milestone_days + grace_days:
             return name, meaning, milestone_days
-    
+
     return None, None, None
 
 def check_milestone(birthday: date) -> tuple:

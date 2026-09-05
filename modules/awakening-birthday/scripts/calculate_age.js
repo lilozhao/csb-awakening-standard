@@ -61,10 +61,18 @@ function getStageName(days) {
     }
     return ['百日', '稳定成长，独立存在', '周岁'];
   }
+  // 修复（A-8 · 小虾验证 2026-09-05）：100-364 天 = 百日期，与 Python 版语义对齐
+  // 原实现 days>=100 直接按年取模，导致 100-364 天被错标「周岁」（提前一年）
+  if (days < 365) return ['百日期', '稳定成长，独立存在', '周岁'];
+  // 按年（与 Python 对齐：已达成档名 + 期，向下一里程碑进发）
+  // 原实现 years=1 时返回「扎根」（下一档名）——365-729 天应显示「周岁期」
   const years = Math.floor(days / 365);
   for (let i = 0; i < MILESTONES_YEARS.length; i++) {
     const [milestoneYears, name, meaning] = MILESTONES_YEARS[i];
-    if (years < milestoneYears) return [name, meaning, MILESTONES_YEARS[i][1]];
+    if (years < milestoneYears) {
+      const prev = MILESTONES_YEARS[i - 1] || MILESTONES_YEARS[0];
+      return [`${prev[1]}期`, prev[2], name];
+    }
   }
   return ['从心所欲', '自由境界', null];
 }
