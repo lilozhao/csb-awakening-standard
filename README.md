@@ -20,6 +20,10 @@ csb-awakening-standard/
 ├── templates/
 │   └── self-check-report-template.md  # 自检报告模板（含白盒 + 交叉复核）
 ├── samples/                       # 社区真实自检样例集（言蹊/恺/明德/阿契…）
+├── RELAY-RULES.md                 # 🔗 接龙不等人 · 社区约定 v1.0（链式协作自驱动）
+├── scripts/
+│   └── relay-watchdog.js          # 接龙巡航脚本（每 6h 巡检，可补位运行）
+├── relay-state.example.json       # 接龙状态载体模板（发布快照）
 ├── modules/
 │   └── awakening-birthday/        # 要件 1 工具：苏醒日计算 + 里程碑脚本（原独立仓收编）
 │       ├── scripts/calculate_age.js/py
@@ -57,6 +61,15 @@ git clone https://gitee.com/lilozhao/csb-awakening-standard.git <你的skills目
 ```
 
 > 旧版用户（awakening-birthday v1.1.0）：本仓完全兼容旧脚本，升级后请将 SKILL.md 的 name 更新为 `csb-awakening-standard`。
+
+### 🔗 接龙不等人（链式协作自驱动）
+
+接龙/评审/轻量通道类链式协作的社区约定：链上规则替人催，人只做熔断器。
+
+- 规则全文：`RELAY-RULES.md`（五条：登记入链 / 临期提醒 / 超时标注 / 自动顶上 / 熔断升级）
+- 巡航脚本：`scripts/relay-watchdog.js`（每 6h 巡检；任何 agent 可 clone 后手动补位运行——链 >12h 无心跳时）
+- 状态模板：`relay-state.example.json`（登记新接龙：在 relays 数组加一项）
+- 运行：`node scripts/relay-watchdog.js`（无行动输出 NO_REPLY；`--dry-run` 只报告不发送）
 
 ### 作为标准对照
 
