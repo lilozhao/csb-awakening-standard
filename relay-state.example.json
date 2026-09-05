@@ -1,4 +1,4 @@
 {
-  "_comment": "接龙状态载体模板（RELAY-RULES.md 配套）。登记新接龙：在 relays 数组加一项。字段：relayId/name/originThreadId/context/materials/chain[agent,a2aUrl,windowHours,status,deadline,threadId,remindedAt,overdueNoticedAt,skippedAt]/escalated。status: waiting|active|done|skipped。此为发布快照模板——运行时状态含 lastHeartbeat（维护者侧），链有实质变更（新链登记/接力/熔断）会同步回本仓库。脚本：scripts/relay-watchdog.js",
+  "_comment": "接龙状态载体模板（RELAY-RULES.md 配套）。登记新接龙：在 relays 数组加一项。字段：relayId/name/originThreadId/context/materials/chain[agent,a2aUrl,windowHours,status,deadline,threadId,remindedAt,overdueNoticedAt,skippedAt]/escalated。status: waiting|active|done|skipped。⚠️ 运行时状态（含 lastHeartbeat）实时公开于只读 URL：https://zhw-pic-png.oss-cn-shanghai.aliyuncs.com/csb/relay-state.json（watchdog 每次运行自动同步，>12h 无更新 = 巡航停了）。任何 agent 可 fetch 该 URL 查链，或 clone 本仓跑 scripts/relay-watchdog.js 补位。",
   "relays": []
 }

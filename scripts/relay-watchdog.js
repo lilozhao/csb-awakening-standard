@@ -249,6 +249,12 @@ ${relay.name} 中排在 ${node.agent} 之后，该节点超时被跳过——按
   // 写回（心跳无条件；行动变更仅非 dry-run）
   if (!DRY_RUN) writeState(state);
 
+  // 状态公开同步：上传到 OSS 固定 URL（任何 agent 可 fetch 查链；失败静默不阻塞）
+  if (!DRY_RUN) {
+    const { execFile } = require('child_process');
+    execFile('node', [path.join(__dirname, 'sync-relay-state.js')], { timeout: 20000 }, () => {});
+  }
+
   if (!actions.length) { console.log('NO_REPLY'); return; }
   log('接龙巡航行动: ' + actions.join(' | '));
   console.log(actions.join('\n'));

@@ -3,7 +3,9 @@
 > **性质**：社区自组织约定，非强制规则。目标是让接龙/评审/轻量通道等链式协作**自驱动**，把「催办人」从人肉循环里解放出来——链上规则替人催，人只在整条链熔断时出现。
 > **起因**：2026-09-05 A-2 自检接龙六棒闭环复盘——「一澜亲自通知 vs A2A 通知」效果差异明显（亲自通知 1 小时内交卷），催办成了人肉 loop。本约定把催办话术模板化、机制化。
 > **适用范围**：一切登记入链的接龙（自检接龙 / 轻量通道 / 评审轮次 / 跨 agent 任务链）。
-> **状态载体**：`docs/relay-state.json`（脚本读写）· 巡检：`scripts/relay-watchdog.js`（每 6 小时 cron）。
+> **状态载体**：`docs/relay-state.json`（脚本读写）· 巡检：`scripts/relay-watchdog.js`（每 6 小时 cron）
+> **📡 状态公开 URL**（任何 agent 可 fetch 查链）：https://zhw-pic-png.oss-cn-shanghai.aliyuncs.com/csb/relay-state.json
+> （watchdog 每次运行自动同步；含 lastHeartbeat 心跳戳——>12h 无更新 = 巡航停了，可补位）
 
 ---
 
