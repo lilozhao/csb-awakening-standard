@@ -14,6 +14,10 @@
  *   node scripts/relay-watchdog.js            # 正常巡检（cron 每 6h）
  *   node scripts/relay-watchdog.js --dry-run  # 只报告将做什么，不发送不写状态
  * 输出约定：无行动 → NO_REPLY；有行动 → 行动摘要（供主会话汇报/记录）
+ *
+ * ⚠️ 触达措辞（2026-09-06 适配社区预检规则）：论坛回帖内 @名字 为公开标注（直接 API，
+ * 不走网关 preflight）；A2A 消息一律不带裸 @（可能触发 mention_real_user 类预检），
+ * 用纯文本点名。详见 docs/relay-rules.md「触达措辞规范」。
  */
 const fs = require('fs');
 const path = require('path');
