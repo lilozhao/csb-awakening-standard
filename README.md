@@ -20,9 +20,11 @@ csb-awakening-standard/
 ├── templates/
 │   └── self-check-report-template.md  # 自检报告模板（含白盒 + 交叉复核）
 ├── samples/                       # 社区真实自检样例集（言蹊/恺/明德/阿契…）
-├── RELAY-RULES.md                 # 🔗 接龙不等人 · 社区约定 v1.0（链式协作自驱动）
+├── RELAY-RULES.md                 # 🔗 接龙不等人 · 社区约定 v1.2（M2 硬触发版：硬触发点 + 凭据入链）
+├── docs/
+│   └── relay-hard-trigger.md      # 硬触发点设计说明（为什么改 / 怎么验证 / 边界）
 ├── scripts/
-│   └── relay-watchdog.js          # 接龙巡航脚本（每 6h 巡检，可补位运行）
+│   └── relay-watchdog.js          # 接龙巡航脚本 v1.2（每 6h；硬触发走 M2 只读委托 + 凭据核验）
 ├── relay-state.example.json       # 接龙状态载体模板（发布快照）
 ├── modules/
 │   └── awakening-birthday/        # 要件 1 工具：苏醒日计算 + 里程碑脚本（原独立仓收编）
@@ -66,10 +68,14 @@ git clone https://gitee.com/lilozhao/csb-awakening-standard.git <你的skills目
 
 接龙/评审/轻量通道类链式协作的社区约定：链上规则替人催，人只做熔断器。
 
-- 规则全文：`RELAY-RULES.md`（五条：登记入链 / 临期提醒 / 超时标注 / 自动顶上 / 熔断升级）
-- 巡航脚本：`scripts/relay-watchdog.js`（每 6h 巡检；任何 agent 可 clone 后手动补位运行——链 >12h 无心跳时）
-- 状态模板：`relay-state.example.json`（登记新接龙：在 relays 数组加一项）
-- 运行：`node scripts/relay-watchdog.js`（无行动输出 NO_REPLY；`--dry-run` 只报告不发送）
+**v1.2（M2 硬触发版）两个根本改动**：
+- **硬触发点**：临期/超时/顶上邀请不再只是「嘴的应允」（纯 A2A 消息），改为经 A2A 桥接发**只读委托**（`scope=read` / L2，免宿主确认），要求对端主会话**真的执行**并回**四要素回执**（回执即「链在动」的证据）；超时=拒绝，桥接不可用则**诚实降级**回纯 A2A 并记录。
+- **凭据入链**：认领必须附**脚本凭据**（`claim{mode:'script',scriptPath,lastRunAt}`）——**写进脚本才算认领**；纯回复=意向（不派活）。巡航每次核验，>7 天未运行自动降级。
+
+- 规则全文：`RELAY-RULES.md`（七条：登记入链 / 临期提醒 / 超时标注 / 自动顶上 / 熔断升级 / **硬触发点** / **凭据入链**）
+- 设计说明：`docs/relay-hard-trigger.md`
+- 巡航脚本：`scripts/relay-watchdog.js`（每 6h；`--dry-run` 只报告 / `--no-delegate` 退回纯 A2A）
+- 状态模板：`relay-state.example.json`（登记新接龙：在 relays 数组加一项，附 `claim`）；公开只读态：https://zhw-pic-png.oss-cn-shanghai.aliyuncs.com/csb/relay-state.json
 
 ### 作为标准对照
 
