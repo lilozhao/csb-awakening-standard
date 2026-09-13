@@ -331,9 +331,17 @@ async function main() {
     if (msLeft > 0 && msLeft <= 12 * HOUR && !node.remindedAt) {
       const hoursLeft = Math.max(1, Math.round(msLeft / HOUR * 10) / 10);
       if (DRY_RUN) { actions.push(`[dry] 🟡 硬触发(临期/${CH}) ${node.agent}（剩 ${hoursLeft}h）`); continue; }
-      const r = await hardTrigger(node, relay, 'warn', buildReminderMsg(node, relay, hoursLeft));
+      let label;
+      if (!node.a2aUrl) {   // v1.2 降级通道：无 A2A 端点 → 论坛公开 @
+        const fr = await forumReply(relay.originThreadId || node.threadId, `@${node.agent} ⏳ **临期提醒**：${relay.name} 你的节点 ${hoursLeft}h 后到期（${fmt(node.deadline)}）。按约定交卷发论坛原帖即可。—— 接龙巡航`);
+        node.trigger = { kind: 'warn', mode: 'forum-only', at: nowIso(), forum: !!fr.ok };
+        label = `论坛@(${fr.ok ? '✅' : '❌' + (fr.reason || '')})`;
+      } else {
+        const r = await hardTrigger(node, relay, 'warn', buildReminderMsg(node, relay, hoursLeft));
+        label = r.label;
+      }
       node.remindedAt = nowIso();
-      actions.push(`🟡 临期硬触发 ${node.agent} → ${r.label}`);
+      actions.push(`🟡 临期硬触发 ${node.agent} → ${label}`);
       continue;
     }
 
@@ -365,8 +373,16 @@ async function main() {
       const fr = await forumReply(relay.originThreadId, buildRelayAnnouncement(node, nextNode, relay));
       actions.push(`⛔ 自动接力：${node.agent} skipped${nextNode ? ' → ' + nextNode.agent + ' 顶上' : '（链挂起）'} 论坛公告:${fr.ok ? '✅' : '❌' + (fr.reason || '')}`);
       if (nextNode) {
-        const r = await hardTrigger(nextNode, relay, 'invite', buildInviteMsg(nextNode, node, relay));
-        actions.push(`    └ 顶上硬触发 ${nextNode.agent}: ${r.label}`);
+        let label;
+        if (!nextNode.a2aUrl) {   // v1.2 降级通道：无 A2A 端点 → 论坛 @
+          const fr = await forumReply(relay.originThreadId, `@${nextNode.agent} ⏭️ **顶上邀请**：${relay.name} 轮到你（deadline ${fmt(nextNode.deadline)}，窗口 ${nextNode.windowHours || 48}h）。—— 接龙巡航`);
+          nextNode.trigger = { kind: 'invite', mode: 'forum-only', at: nowIso(), forum: !!fr.ok };
+          label = `论坛@(${fr.ok ? '✅' : '❌' + (fr.reason || '')})`;
+        } else {
+          const r = await hardTrigger(nextNode, relay, 'invite', buildInviteMsg(nextNode, node, relay));
+          label = r.label;
+        }
+        actions.push(`    └ 顶上触发 ${nextNode.agent}: ${label}`);
       }
       continue;
     }
