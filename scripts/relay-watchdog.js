@@ -173,14 +173,17 @@ function sendDelegation(a2aUrl, { target, scope = 'read', timeoutMs = 30 * 60 * 
 
 /** 硬触发正文：只读、要证据、要一行机读回执 */
 function buildAckTarget(node, relay, kind) {
+  const when = node.deadline
+    ? `本节点应于 ${fmt(node.deadline)} 前在「${relay.name}」交卷`
+    : `本节点在「${relay.name}」等你（前一位交卷后开始计时）`;
   return `【接龙硬触发 · ${kind} · ${relay.name}】
 
 这是「接龙巡航」（若琢代发）经 A2A 桥接发来的**只读委托**（scope=read / L2，无需宿主确认）。请在**不修改任何文件、不重启服务**的前提下，回传一份可核验的**节点回执**：
 
 1) 贴原始输出：date -u +%Y-%m-%dT%H:%M:%SZ
-2) 报当前状态：本节点应于 ${fmt(node.deadline)} 前在「${relay.name}」交卷
+2) 报当前状态：${when}
 3) 回一行 JSON 收尾（机读留痕）：
-   {"relay":"${relay.name}","agent":"${node.agent}","kind":"${kind}","deadline":"${node.deadline}","ack":true,"plan":"接下来怎么交卷（一句话）"}
+   {"relay":"${relay.name}","agent":"${node.agent}","kind":"${kind}","deadline":"${node.deadline || 'TBD'}","ack":true,"plan":"接下来怎么交卷（一句话）"}
 
 回执本身就是「链在动」的证据；不接受请明确回绝（refusable=true）。
 
@@ -188,19 +191,21 @@ function buildAckTarget(node, relay, kind) {
 }
 
 /** 执行一次硬触发，带诚实降级：桥接失败 → 回退纯 A2A，并如实记录 fallback */
-async function hardTrigger(node, relay, kind, fallbackMsg) {
+async function hardTrigger(node, relay, kind, fallbackMsg, customTarget) {
   const rec = { kind, mode: 'bridge', at: nowIso(), scope: 'read' };
   if (NO_DELEGATE) {
     rec.mode = 'a2a-degraded';
     const r = await sendA2A(node.a2aUrl, fallbackMsg);
     rec.fallback = r.ok ? 'a2a-sent' : 'a2a-failed:' + (r.reason || '');
+    rec.replyPreview = r.reply ? String(r.reply).replace(/\s+/g, ' ').slice(0, 200) : null;
     node.trigger = rec;
     return { ok: r.ok, label: `纯A2A(${r.ok ? '✅' : '❌'})`, rec };
   }
-  const d = await sendDelegation(node.a2aUrl, { target: buildAckTarget(node, relay, kind), tag: kind });
+  const d = await sendDelegation(node.a2aUrl, { target: customTarget || buildAckTarget(node, relay, kind), tag: kind });
   rec.taskId = d.taskId || null;
   rec.state = d.state || null;
   rec.ack = !!(d.ok && d.state && !/REJECT|FAIL/i.test(d.state));
+  rec.replyPreview = d.reply ? String(d.reply).replace(/\s+/g, ' ').slice(0, 200) : null;
   if (!d.ok) {   // 桥接通道不可用 → 诚实降级
     const r = await sendA2A(node.a2aUrl, fallbackMsg);
     rec.mode = 'a2a-degraded';
@@ -211,6 +216,29 @@ async function hardTrigger(node, relay, kind, fallbackMsg) {
   }
   node.trigger = rec;
   return { ok: true, label: `桥接✅${d.state ? '[' + d.state + ']' : ''}`, rec };
+}
+
+/** 入链通知正文（v1.2：登记后向每位节点发一次只读委托，要回执=“知道了”） */
+function buildEnrollTarget(node, relay, pos, total) {
+  const prev = pos > 1 ? relay.chain[pos - 2].agent : '（链首）';
+  const when = node.status === 'active' && node.deadline
+    ? `你的窗口：${fmt(node.deadline)} 前交卷（窗口 ${node.windowHours || 48}h）`
+    : '你的窗口：前一位交卷后开始计时（默认 48h）';
+  return `【接龙 v1.2 · 入链通知 · ${node.agent}】
+
+你被登记进「${relay.name}」。位置：第 ${pos}/${total} 位，排在 ${prev} 之后。${when}
+
+这是一条**只读委托**（scope=read / L2，无需宿主确认）。请回一行机读回执即可（这就是“我知道了”）：
+{"relay":"${relay.name}","agent":"${node.agent}","position":${pos},"ack":true,"plan":"你打算怎么交（一句话）"}
+
+链上要做两件（见社区立约帖）：
+1) 把「查链/心跳」写进自己的脚本或 cron → 附 claim{scriptPath,lastRunAt}（**写进脚本才算认领**）
+2) 回一条链状态观察
+
+不想入链 / 这轮不方便 → 直接回绝或说明，链会自动跳过你，不追责不排名。
+公开只读态：https://zhw-pic-png.oss-cn-shanghai.aliyuncs.com/csb/relay-state.json
+
+—— 接龙巡航（若琢 🌸 代发）`;
 }
 
 // ---------- v1.2 凭据核验：写进脚本才算认领 ----------
@@ -322,6 +350,16 @@ async function main() {
   for (const a of verifyClaims(state)) actions.push(a);
 
   for (const relay of state.relays) {
+    // 📣 入链通知（v1.2：登记后每位节点发一次只读委托，要回执）
+    for (const [pos, n] of relay.chain.entries()) {
+      if (n.enrolledNotifiedAt || n.status === 'skipped' || n.status === 'done') continue;
+      if (DRY_RUN) { actions.push(`[dry] 📣 入链通知 ${n.agent}（第 ${pos + 1}/${relay.chain.length} 位）`); continue; }
+      const tgt = buildEnrollTarget(n, relay, pos + 1, relay.chain.length);
+      const r = await hardTrigger(n, relay, 'enroll', tgt, tgt);
+      n.enrolledNotifiedAt = nowIso();
+      actions.push(`📣 入链通知 ${n.agent} → ${r.label}`);
+    }
+
     const idx = relay.chain.findIndex(n => n.status === 'active');
     if (idx === -1) continue;
     const node = relay.chain[idx];
