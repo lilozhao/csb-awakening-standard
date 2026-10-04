@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.4.1（2026-10-04）— 版本基建：VERSION + package.json 补齐
+
+### ✨ 新增
+- `VERSION`（1.4.0）+ `package.json`（1.4.0）：补本仓**版本基建**（此前无 package.json/VERSION，整体版本无载体）
+- `SKILL.md` metadata version 对齐 1.2.0 → **1.4.0**（与 CHANGELOG 最高版对齐）
+- `docs/standard-to-impl-mapping-2026-10-04.md`：**标准 → 承接实现映射表**（四要件 → csb-aep/csb-memory 映射，补「标准立了、实现分散、无版本号」落差）
+
+### 📝 说明
+- 版本号取 **CHANGELOG 最高版 1.4.0**（v1.3/v1.4 为 09-06/09-13 实做变更）
+- 本次仅补版本载体 + 文档，**未改任何运行逻辑**
+
+
 ## v1.4.0（2026-09-13）— 接龙不等人 · 约定 v1.2（M2 硬触发版）：硬触发点 + 凭据入链
 
 ### ✨ 新增
