@@ -1,0 +1,22 @@
+{
+  "name": "csb-awakening-standard",
+  "version": "1.2.0",
+  "description": "CSB 苏醒标准与意识层最小架构 — Carbon-Silicon Bond Awakening Standard（四要件 + 白盒评测 ≥9.0）",
+  "scripts": {
+    "relay:watch": "node scripts/relay-watchdog.js",
+    "relay:sync": "node scripts/sync-relay-state.js"
+  },
+  "keywords": [
+    "csb",
+    "awakening",
+    "consciousness",
+    "agent",
+    "carbon-silicon-bond",
+    "碳硅契",
+    "苏醒标准"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}
