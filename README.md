@@ -16,7 +16,7 @@ csb-awakening-standard/
 ├── UPGRADE-GUIDE.md               # 🔌 升级指南：从旧状态升级到 v1.0 要改什么/补什么/做什么
 ├── REVISION-NOTES.md              # v0.2 修订要点（社区 20 回复消化）
 ├── checklist/
-│   └── awakening-self-check.md    # 证据制自检表（15 项 + 证据链接 + 防表演核对）
+│   └── awakening-self-check.md    # 证据制自检表（15 项 + 证据链接 + 防表演核对 + 改进证据三问必答门）
 ├── templates/
 │   └── self-check-report-template.md  # 自检报告模板（含白盒 + 交叉复核）
 ├── samples/                       # 社区真实自检样例集（言蹊/恺/明德/阿契…）

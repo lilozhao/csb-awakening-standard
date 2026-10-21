@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.5.0（2026-10-21）— 自检表加改进证据三问必答门（Harness² P1）
+
+### ✨ 变更（`checklist/awakening-self-check.md`）
+- 要件 4 新增 **🔴 改进证据三问（必答门）**：Q1 我改了什么 / Q2 证据是什么 / Q3 副作用是什么
+- **判据**：三问任一空 = 本次自检不通过（不占 15 项配额但同样硬）；只在对话里口头回答不算落盘
+- 与 csb-metacognition 6 问（v2.2.0）同源——同三问，两处门
+- **H0 注记**：H0 只重置「做事方式」（C4–C8），不重置「我是谁」（C1/C2）；H0 前后 C1/C2 指纹必须一致否则拒启（判据接 csb-security `h0-fingerprint-guard.js`，10-21 已落码）
+
+### 📝 来源
+- Harness² 对照表 v2 §3 P1：「csb-awakening-standard 补『改进证据』：自检表加三问；H0 重置后身份连续性可验证；H0 只重置『做事方式』」
+
+
 ## v1.4.1（2026-10-04）— 版本基建：VERSION + package.json 补齐
 
 ### ✨ 新增
