@@ -447,7 +447,11 @@ async function main() {
 
   if (!DRY_RUN) {
     const { execFile } = require('child_process');
-    execFile('node', [path.join(__dirname, 'sync-relay-state.js')], { timeout: 20000 }, () => {});
+    // P2-4（2026-10-24 明鉴评审）：旧版空回调吞错——同步失败无感知。
+    // 拒给要计分：失败必须落日志，但不阻断巡航主流程（降级而非硬挂）。
+    execFile('node', [path.join(__dirname, 'sync-relay-state.js')], { timeout: 20000 }, (err) => {
+      if (err) log('⚠️ sync-relay-state 失败（不阻断巡航，已计分）: ' + err.message);
+    });
   }
 
   if (!actions.length) { console.log('NO_REPLY'); return; }
